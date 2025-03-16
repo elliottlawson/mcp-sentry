@@ -80,7 +80,7 @@ mcp-sentry/
 │   ├── models.ts          # Data models
 │   ├── utils.ts           # Utility functions
 │   └── types/             # Type definitions
-├── build/                 # Compiled JavaScript files
+├── build/                 # Compiled JavaScript files (included in the repository for direct npx execution)
 ├── package.json
 ├── tsconfig.json
 └── README.md
@@ -91,6 +91,8 @@ mcp-sentry/
 ```bash
 npm run build
 ```
+
+Note: Unlike typical Node.js projects, the build directory is committed to this repository to support direct npx execution without requiring users to build the project themselves.
 
 ### Running in Development Mode
 
