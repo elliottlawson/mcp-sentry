@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { SentryClient } from './sentry-client.js';
 import { z } from 'zod';
 import { SentryError } from './models.js';
+import { VERSION, NAME } from './version.js';
 
 /**
  * Creates and configures the Sentry MCP server
@@ -12,8 +13,8 @@ import { SentryError } from './models.js';
 export async function createServer(authToken: string): Promise<McpServer> {
   // Create the server and Sentry client
   const server = new McpServer({
-    name: 'sentry',
-    version: '0.1.0',
+    name: NAME,
+    version: VERSION,
   });
   
   const sentryClient = new SentryClient(authToken);

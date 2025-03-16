@@ -4,6 +4,7 @@ import { program } from 'commander';
 import { createServer } from './server.js';
 import dotenv from 'dotenv';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { VERSION, NAME } from './version.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -13,9 +14,9 @@ const MISSING_AUTH_TOKEN_MESSAGE =
 
 // Configure the command-line interface
 program
-  .name('mcp-sentry')
+  .name(NAME)
   .description('A Model Context Protocol server for retrieving and analyzing issues from Sentry.io')
-  .version('0.1.0')
+  .version(VERSION)
   .option('-a, --auth-token <token>', 'Sentry authentication token')
   .parse(process.argv);
 

@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { SentryClient } from './sentry-client.js';
 import { z } from 'zod';
+import { VERSION, NAME } from './version.js';
 /**
  * Creates and configures the Sentry MCP server
  *
@@ -10,8 +11,8 @@ import { z } from 'zod';
 export async function createServer(authToken) {
     // Create the server and Sentry client
     const server = new McpServer({
-        name: 'sentry',
-        version: '0.1.0',
+        name: NAME,
+        version: VERSION,
     });
     const sentryClient = new SentryClient(authToken);
     // Register the get_sentry_issue tool
