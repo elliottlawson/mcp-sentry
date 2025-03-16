@@ -39,7 +39,7 @@ export class SentryClient {
       // Get issue data
       const issueResponse = await this.client.get(`issues/${issueId}/`);
       if (issueResponse.status === 401) {
-        throw new Error('Error: Unauthorized. Please check your Sentry authentication token.');
+        throw new SentryError('Unauthorized. Please check your Sentry authentication token.');
       }
       
       const issueData = issueResponse.data;
@@ -49,7 +49,7 @@ export class SentryClient {
       const hashes = hashesResponse.data;
       
       if (!hashes || hashes.length === 0) {
-        throw new Error('No Sentry events found for this issue');
+        throw new SentryError('No Sentry events found for this issue');
       }
       
       const latestEvent = hashes[0].latestEvent;
@@ -66,18 +66,25 @@ export class SentryClient {
         stacktrace: stacktrace
       };
     } catch (error: unknown) {
+      // Properly format and rethrow errors according to JSON-RPC 2.0 spec
+      // The McpServer will handle these properly formatted errors
+      
+      let errorMessage: string;
+      
       if (error instanceof SentryError) {
-        throw error;
-      }
-      
-      if (axios.isAxiosError(error)) {
+        errorMessage = error.message;
+      } else if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          throw new Error('Error: Unauthorized. Please check your Sentry authentication token.');
+          errorMessage = 'Unauthorized. Please check your Sentry authentication token.';
+        } else {
+          errorMessage = `Error fetching Sentry issue: ${error.message}`;
         }
-        throw new Error(`Error fetching Sentry issue: ${error.message}`);
+      } else {
+        errorMessage = `An error occurred: ${error instanceof Error ? error.message : String(error)}`;
       }
       
-      throw new Error(`An error occurred: ${error instanceof Error ? error.message : String(error)}`);
+      // Let the error propagate - the MCP SDK will handle formatting it properly
+      throw new Error(errorMessage);
     }
   }
   

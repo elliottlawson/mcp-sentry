@@ -34,14 +34,14 @@ export class SentryClient {
             // Get issue data
             const issueResponse = await this.client.get(`issues/${issueId}/`);
             if (issueResponse.status === 401) {
-                throw new Error('Error: Unauthorized. Please check your Sentry authentication token.');
+                throw new SentryError('Unauthorized. Please check your Sentry authentication token.');
             }
             const issueData = issueResponse.data;
             // Get issue hashes
             const hashesResponse = await this.client.get(`issues/${issueId}/hashes/`);
             const hashes = hashesResponse.data;
             if (!hashes || hashes.length === 0) {
-                throw new Error('No Sentry events found for this issue');
+                throw new SentryError('No Sentry events found for this issue');
             }
             const latestEvent = hashes[0].latestEvent;
             const stacktrace = createStacktrace(latestEvent);
@@ -57,16 +57,25 @@ export class SentryClient {
             };
         }
         catch (error) {
+            // Properly format and rethrow errors according to JSON-RPC 2.0 spec
+            // The McpServer will handle these properly formatted errors
+            let errorMessage;
             if (error instanceof SentryError) {
-                throw error;
+                errorMessage = error.message;
             }
-            if (axios.isAxiosError(error)) {
+            else if (axios.isAxiosError(error)) {
                 if (error.response?.status === 401) {
-                    throw new Error('Error: Unauthorized. Please check your Sentry authentication token.');
+                    errorMessage = 'Unauthorized. Please check your Sentry authentication token.';
                 }
-                throw new Error(`Error fetching Sentry issue: ${error.message}`);
+                else {
+                    errorMessage = `Error fetching Sentry issue: ${error.message}`;
+                }
             }
-            throw new Error(`An error occurred: ${error instanceof Error ? error.message : String(error)}`);
+            else {
+                errorMessage = `An error occurred: ${error instanceof Error ? error.message : String(error)}`;
+            }
+            // Let the error propagate - the MCP SDK will handle formatting it properly
+            throw new Error(errorMessage);
         }
     }
     /**

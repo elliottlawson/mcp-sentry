@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { SentryClient } from './sentry-client.js';
 import { z } from 'zod';
+import { SentryError } from './models.js';
 
 /**
  * Creates and configures the Sentry MCP server
@@ -30,17 +31,22 @@ export async function createServer(authToken: string): Promise<McpServer> {
       issue_id_or_url: z.string().describe('Sentry issue ID or URL to analyze'),
     },
     async ({ issue_id_or_url }: { issue_id_or_url: string }) => {
-      const issueData = await sentryClient.getIssue(issue_id_or_url);
-      const formattedText = sentryClient.formatIssueAsText(issueData);
-      
-      return {
-        content: [
-          {
-            type: 'text',
-            text: formattedText,
-          },
-        ],
-      };
+      try {
+        const issueData = await sentryClient.getIssue(issue_id_or_url);
+        const formattedText = sentryClient.formatIssueAsText(issueData);
+        
+        return {
+          content: [
+            {
+              type: 'text',
+              text: formattedText,
+            },
+          ],
+        };
+      } catch (error) {
+        // Let the McpServer handle the error formatting
+        throw error;
+      }
     }
   );
   
@@ -52,21 +58,26 @@ export async function createServer(authToken: string): Promise<McpServer> {
       issue_id_or_url: z.string().describe('Sentry issue ID or URL'),
     },
     async ({ issue_id_or_url }: { issue_id_or_url: string }) => {
-      const issueData = await sentryClient.getIssue(issue_id_or_url);
-      const formattedText = sentryClient.formatIssueAsText(issueData);
-      
-      return {
-        description: `Sentry Issue: ${issueData.title}`,
-        messages: [
-          {
-            role: 'user',
-            content: {
-              type: 'text',
-              text: formattedText,
+      try {
+        const issueData = await sentryClient.getIssue(issue_id_or_url);
+        const formattedText = sentryClient.formatIssueAsText(issueData);
+        
+        return {
+          description: `Sentry Issue: ${issueData.title}`,
+          messages: [
+            {
+              role: 'user',
+              content: {
+                type: 'text',
+                text: formattedText,
+              },
             },
-          },
-        ],
-      };
+          ],
+        };
+      } catch (error) {
+        // Let the McpServer handle the error formatting
+        throw error;
+      }
     }
   );
   

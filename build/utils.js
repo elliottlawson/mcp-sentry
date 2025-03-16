@@ -24,6 +24,9 @@ export function extractIssueId(issueIdOrUrl) {
             throw new SentryError('Could not extract issue ID from URL');
         }
         catch (error) {
+            if (error instanceof SentryError) {
+                throw error;
+            }
             throw new SentryError('Invalid Sentry URL');
         }
     }

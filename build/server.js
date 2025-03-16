@@ -23,35 +23,47 @@ export async function createServer(authToken) {
     - Review error counts and status`, {
         issue_id_or_url: z.string().describe('Sentry issue ID or URL to analyze'),
     }, async ({ issue_id_or_url }) => {
-        const issueData = await sentryClient.getIssue(issue_id_or_url);
-        const formattedText = sentryClient.formatIssueAsText(issueData);
-        return {
-            content: [
-                {
-                    type: 'text',
-                    text: formattedText,
-                },
-            ],
-        };
+        try {
+            const issueData = await sentryClient.getIssue(issue_id_or_url);
+            const formattedText = sentryClient.formatIssueAsText(issueData);
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: formattedText,
+                    },
+                ],
+            };
+        }
+        catch (error) {
+            // Let the McpServer handle the error formatting
+            throw error;
+        }
     });
     // Register the sentry-issue prompt
     server.prompt('sentry-issue', 'Retrieve issue details from Sentry', {
         issue_id_or_url: z.string().describe('Sentry issue ID or URL'),
     }, async ({ issue_id_or_url }) => {
-        const issueData = await sentryClient.getIssue(issue_id_or_url);
-        const formattedText = sentryClient.formatIssueAsText(issueData);
-        return {
-            description: `Sentry Issue: ${issueData.title}`,
-            messages: [
-                {
-                    role: 'user',
-                    content: {
-                        type: 'text',
-                        text: formattedText,
+        try {
+            const issueData = await sentryClient.getIssue(issue_id_or_url);
+            const formattedText = sentryClient.formatIssueAsText(issueData);
+            return {
+                description: `Sentry Issue: ${issueData.title}`,
+                messages: [
+                    {
+                        role: 'user',
+                        content: {
+                            type: 'text',
+                            text: formattedText,
+                        },
                     },
-                },
-            ],
-        };
+                ],
+            };
+        }
+        catch (error) {
+            // Let the McpServer handle the error formatting
+            throw error;
+        }
     });
     return server;
 }
