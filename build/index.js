@@ -25,13 +25,13 @@ async function main() {
         }
         // Create and start the server
         const server = await createServer(authToken);
-        console.log('Starting Sentry MCP server...');
+        console.error('Starting Sentry MCP server...');
         const transport = new StdioServerTransport();
         await server.connect(transport);
-        console.log('Sentry MCP Server running on stdio');
+        console.error('Sentry MCP Server running on stdio');
         // Handle termination signals
         const shutdown = () => {
-            console.log('Shutting down Sentry MCP server...');
+            console.error('Shutting down Sentry MCP server...');
             process.exit(0);
         };
         process.on('SIGINT', shutdown);
